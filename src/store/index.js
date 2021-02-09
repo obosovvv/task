@@ -6,11 +6,15 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    itemQuantity: [],
     names: {},
     goods: [],
-    cart: []
+    cart: [],
+    rate: 74.01
   },
   getters: {
+    itemQuantity: state => state.itemQuantity,
+    rate: state => state.rate,
     names: state => state.names,
     goods: state => state.goods,
     cart: state => state.cart
@@ -22,6 +26,8 @@ export default new Vuex.Store({
     },
     async 'FETCHGOODS'({commit}) {
       const goods = (await axios.get(`http://localhost:3000/data`)).data.Value.Goods
+      const newRate = Math.floor(Math.random() * (80 - 20 + 1)) + 20;
+      commit('CHANGERATE', newRate)
       commit('GOODS', goods)
     },
     'ADDTOCART'({commit}, item) {
@@ -35,6 +41,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    'CHANGERATE'(state, rate) {
+      state.rate = rate
+    },
     'NAMES'(state, names) {
       state.names = names
     },
@@ -42,10 +51,9 @@ export default new Vuex.Store({
       state.goods = goods
     },
     'ADDTOCART'(state, product) {
-      if (state.cart.length && state.cart.find(item => item.index === product.index)) {
+      if (state.cart.length && state.cart.find(item => item.index === product.index && item.name === product.name)) {
         state.cart = state.cart.map(item => {
-          if (item.index === product.index) {
-            item.quantity++
+          if (item.index === product.index && item.name === product.name) {
             return item
           } else return item
         })
@@ -53,28 +61,40 @@ export default new Vuex.Store({
         product.quantity = 1
         state.cart.push(product)
       }
-      state.goods.forEach(item => {
+      // state.goods.forEach(item => {
+      //   if (item.G === product.G && item.T === product.T) {
+      //   }
+      // })
+      const foundItemQuantity = state.itemQuantity.find(item => {
         if (item.G === product.G && item.T === product.T) {
-          item.P = item.P - 1
+          return true
         }
       })
+      if (!foundItemQuantity) {
+        state.itemQuantity.push({
+          ...product,
+          quantity: 1
+        })
+      } else {
+        foundItemQuantity.quantity++
+      }
     },
     'DELETE'(state, payload) {
       state.cart.splice(payload.index, 1)
-      state.goods.forEach(item => {
+      const foundItemQuantity = state.itemQuantity.find(item => {
         if (item.G === payload.G && item.T === payload.T) {
-          item.P = payload.max
+          return true
         }
       })
+      foundItemQuantity.quantity = 0
     },
     'CHANGEQUANTITY'(state, payload) {
-      let quantity = payload.quantity - state.cart[payload.index].quantity
-      state.cart[payload.index].quantity = payload.quantity
-      state.goods.forEach(item => {
+      const foundItemQuantity = state.itemQuantity.find(item => {
         if (item.G === payload.G && item.T === payload.T) {
-          item.P = item.P - quantity
+          return true
         }
       })
+      foundItemQuantity.quantity = payload.quantity
     }
   },
 })
