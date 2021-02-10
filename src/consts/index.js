@@ -1,0 +1,23 @@
+// app consts
+export const FETCH_NAMES = 'FETCH_NAMES'
+export const FETCH_GOODS = 'FETCH_GOODS'
+export const ADD_TO_CART = 'ADD_TO_CART'
+export const DELETE = 'DELETE'
+export const ITEM_QUANTITY = 'ITEM_QUANTITY'
+export const CHANGE_QUANTITY = 'CHANGE_QUANTITY'
+export const CHANGE_RATE = 'CHANGE_RATE'
+export const NAMES = 'NAMES'
+export const GOODS = 'GOODS'
+export const CART = 'CART'
+export const RATE = 'RATE'
+export const NEW_ADD_TO_CART = 'NEW_ADD_TO_CART'
+export const GET_ITEM_BY_GROUP = 'GET_ITEM_BY_GROUP'
+export const NEW_DELETE = 'NEW_DELETE'
+
+// alias
+export const PRICE = 'C'
+export const GROUP_ID = 'G'
+export const GROUP = 'B'
+export const ITEM_MAX_QUANTITY = 'P'
+export const ITEM_ID = 'T'
+export const NAME = 'N'

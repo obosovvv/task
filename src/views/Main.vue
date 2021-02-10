@@ -6,14 +6,14 @@
                 switch-toggle-side
                 expand-separator
                 v-for="(key, value) in names"
-                :key="value"
+                :key="key.G"
                 :label="key.G"
             >
                 <q-list bordered separator>
                     <q-item
                         clickable
                         v-for="(item, index) in getItems(+value)"
-                        :key="index"
+                        :key="item.T"
                         :class="rate > previousValue ? 'green' : rate < previousValue ? 'red' : ''"
                     >
                         <q-item-section>{{`${title(item.T, value)} (${item.P - getQuantity({G: item.G, T: item.T})})`}}
@@ -37,23 +37,25 @@
 <script>
   import Cart from './Cart'
   import { mapActions, mapGetters } from 'vuex'
+  import { ADD_TO_CART, CART, FETCH_GOODS, FETCH_NAMES, GOODS, ITEM_QUANTITY, NAMES, RATE } from '../consts';
 
   export default {
     name: 'Main',
     components: { Cart },
     data() {
       return {
-        previousValue: ''
+        previousValue: '',
+        time: 15000
       }
     },
     computed: {
-      ...mapGetters([
-        'itemQuantity',
-        'cart',
-        'names',
-        'goods',
-        'rate'
-      ]),
+      ...mapGetters({
+        itemQuantity: ITEM_QUANTITY,
+        cart: CART,
+        names: NAMES,
+        goods: GOODS,
+        rate: RATE
+      }),
       getPercent() {
         if (this.rate > this.previousValue) {
           return ((this.rate - this.previousValue) / this.rate) * 100
@@ -63,10 +65,11 @@
     },
     methods: {
       ...mapActions({
-        fetchNames: 'FETCHNAMES',
-        fetchGoods: 'FETCHGOODS',
-        addToCart: 'ADDTOCART',
+        fetchNames: FETCH_NAMES,
+        fetchGoods: FETCH_GOODS,
+        addToCart: ADD_TO_CART,
       }),
+      // TODO getters
       getQuantity(payload) {
         const foundItem = this.itemQuantity.find(item => {
           if (item.G === payload.G && item.T === payload.T) {
@@ -75,6 +78,7 @@
         })
         return foundItem ? foundItem.quantity : 0
       },
+      // TODO getters
       getItems(id) {
         return this.goods.filter(item => item.G === id)
       },
@@ -83,15 +87,26 @@
       },
       savePrevious() {
         this.previousValue = this.rate
+      },
+      cron() {
+        if (this.timeout) {
+          clearTimeout(this.timeout);
+        }
+        try {
+          this.savePrevious()
+          this.fetchNames()
+          this.fetchGoods()
+        } catch (e) {
+          console.log(e)
+        } finally {
+          this.timeout = setTimeout(() => {
+            this.cron();
+          }, this.time);
+        }
       }
     },
     mounted() {
-      this.fetchNames()
-      this.fetchGoods()
-      setInterval(() => {
-        this.savePrevious();
-        this.fetchGoods()
-      }, 30000)
+      this.cron();
     }
   }
 </script>
